@@ -178,7 +178,7 @@ def init_world_render(game):
     )
     origin_x = w_world - (cols_right + 0.5) * cam.hex_asset_size[0]
     origin_y = d_from_bottom
-    cam.AXIAL_ORIGIN = (origin_x, origin_y)
+    cam.AXIAL_ORIGIN_PIXEL = (origin_x, origin_y)
 
     for tile in board.values():
         tile.draw_tile_images_to_world(game)

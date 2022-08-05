@@ -39,7 +39,7 @@ class Camera:
 
         self.world_size = (w_world, h_world)
         self.WORLD_SURFACE = pg.Surface(self.world_size)
-        self.AXIAL_ORIGIN = None
+        self.AXIAL_ORIGIN_PIXEL = None
 
     def get_surface_center(self):
         w, h = self.surface.get_size()
@@ -83,7 +83,7 @@ class Camera:
 
         w, h = self.surface.get_size()
         world_size = self.world_size
-        origin = self.AXIAL_ORIGIN
+        origin = self.AXIAL_ORIGIN_PIXEL
 
         max_x = world_size[0]
         min_x = 0
@@ -135,7 +135,7 @@ class Camera:
         self.update_center(self.center, game)  # probably not necessary
 
     def update_display_as_world_section(self):
-        origin = self.AXIAL_ORIGIN
+        origin = self.AXIAL_ORIGIN_PIXEL
         world = self.WORLD_SURFACE
 
         _, tl = self.get_bottom_right_and_top_left()

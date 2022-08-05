@@ -46,8 +46,13 @@ class PlayerInput:
 class GameState:
     def __init__(self):
         self.isPaused = False
-        self.rows = 25
-        self.cols = 50
+        # TODO, this breaks for low rows/cols 
+        # (proportial to window_size)
+        # Should support n_min and corresponding ratio
+        self.rows = 26
+        self.cols = 44
+        # that being said, for refernce civ 6 tiniest 
+        # map is 44x26 and the largest is 106x66 columns
         self.grid_size = (self.rows, self.cols)
         self.board = {}
         self.inMainMenu = True

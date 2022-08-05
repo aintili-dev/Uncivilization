@@ -175,7 +175,7 @@ class Hex:
         q, r = self.v
         render = game.Renderer
         cam = render.camera
-        origin = cam.AXIAL_ORIGIN
+        origin = cam.AXIAL_ORIGIN_PIXEL
 
         x, y = axial_to_pixel(game, self.v)
         x = x + origin[0]
@@ -220,7 +220,7 @@ class Hex:
         assets = r.assets["base_hexes"]
         cam = r.camera
 
-        origin = cam.AXIAL_ORIGIN
+        origin = cam.AXIAL_ORIGIN_PIXEL
 
         loaded_image = assets[img]
         img_w, img_h = loaded_image.get_size()
