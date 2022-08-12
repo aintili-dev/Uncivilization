@@ -1,5 +1,4 @@
 import numpy as np
-import pygame as pg
 
 ONE_THIRD = 1 / 3
 S3 = np.sqrt(3)
@@ -169,7 +168,7 @@ class Hex:
 
     def get_edge(self, center, size, indeces):
         start, end = indeces
-        return get_corner(center, size, start), get_corner(center, size, end)
+        return self.get_corner(center, size, start), self.get_corner(center, size, end)
 
     def draw_coords(self, game, ctype="axial"):
         q, r = self.v
@@ -194,7 +193,7 @@ class Hex:
 
         TextSurf = render.coordText.render(coord_s, False, (1, 1, 1))
         text_rect = TextSurf.get_rect(center=(x, y))
-        cam.WORLD_SURFACE.blit(TextSurf, text_rect)
+        cam.WORLD_SURFACES.blit(TextSurf, text_rect)
 
     def get_image_for_display(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
@@ -207,13 +206,13 @@ class Hex:
 
         return loaded_image, dest
 
-    def draw_tile_images_to_display(self, game):
-        rend = game.Renderer
-        camera = rend.camera
-        display = camera.surface
-        for image in self.images:
-            asset, dest = self.get_image_for_display(game, img=image)
-            display.blit(asset, dest)
+    # def draw_tile_images_to_display(self, game):
+    #     rend = game.Renderer
+    #     camera = rend.camera
+    #     display = camera.surface
+    #     for image in self.images:
+    #         asset, dest = self.get_image_for_display(game, img=image)
+    #         display.blit(asset, dest)
 
     def get_image_for_world(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
@@ -234,6 +233,20 @@ class Hex:
     def draw_tile_images_to_world(self, game):
         rend = game.Renderer
         camera = rend.camera
+        surfaces = camera.WORLD_SURFACES
+
         for image in self.images:
-            asset, dest = self.get_image_for_world(game, img=image)
-            camera.WORLD_SURFACE.blit(asset, dest)
+            img, tl = self.get_image_for_world(game,img=image)
+            tlx,tly = tl
+            wc = 0
+            cx = tlx
+            for surface in surfaces:
+                w_surf, h_surf = surface.get_size()
+                xf = wc + w_surf
+                if cx <= xf:
+                    tlx_p = cx - wc
+                    surface.blit(img,(tlx_p,tly))
+                wc = xf
+
+        #asset_dest_pairs = [self.get_image_for_world(game,img=image) for image in self.images]
+        #camera.WORLD_SURFACES.blits(asset_dest_pairs)

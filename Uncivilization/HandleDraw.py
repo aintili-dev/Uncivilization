@@ -109,7 +109,7 @@ def drawSettingsMenu(game):
 
         pg.draw.rect(screen, (100, 100, 100), rect, width=3)
         screen.blit(surf, (centerx, centery))
-         
+
     for box_info in boxes_interact:
         surf, rect = box_info
         sx, sy = surf.get_size()
@@ -118,9 +118,8 @@ def drawSettingsMenu(game):
         centerx -= sx // 2
         centery -= sy // 2
 
-        #pg.draw.rect(screen, (100, 100, 100), rect, width=3)
+        # pg.draw.rect(screen, (100, 100, 100), rect, width=3)
         screen.blit(surf, (centerx, centery))
-
 
     pg.display.update()
     diagnosticsDraw(game) if game.drawDiagnostic else cleanDiagnosticDraw(game)
@@ -163,7 +162,6 @@ def distance_to_extrema_rows(n_rows, size):
 def init_world_render(game):
     t_load = time.time()
     gamestate = game.GameState
-    rows, cols = gamestate.grid_size
 
     board = gamestate.board
     rend = game.Renderer
@@ -182,12 +180,15 @@ def init_world_render(game):
 
     for tile in board.values():
         tile.draw_tile_images_to_world(game)
-        tile.draw_coords(game, ctype="both")
+        #tile.draw_coords(game, ctype="both")
 
     dt = time.time() - t_load
     dt = format(dt, "0.2f")
-    byte_size_row = cam.WORLD_SURFACE.get_pitch()
-    byte_size = byte_size_row * cam.WORLD_SURFACE.get_size()[1]
+    byte_size = 0
+    for surface in cam.WORLD_SURFACES:
+        byte_size_row = surface.get_pitch()
+        byte_size += byte_size_row * surface.get_size()[1]
+    
     byte_size /= 1024 * 1024 * 1024
     byte_size = format(byte_size, "0.2f")
     print(f"Finished initializing world in {dt}s.\nIt is ~{byte_size} GB (using pitch * height)")

@@ -38,8 +38,39 @@ class Camera:
         h_world = self.d_from_top + self.d_from_bottom
 
         self.world_size = (w_world, h_world)
-        self.WORLD_SURFACE = pg.Surface(self.world_size)
+        self.WORLD_SURFACES = self.initialize_world_surfaces()
         self.AXIAL_ORIGIN_PIXEL = None
+
+    def initialize_world_surfaces(self):
+        w,h = self.world_size
+        size = w * h
+
+        # if we get random float errors, its probably because of this :)
+        ww = int(w)
+
+        # All determined emperically for sanity check
+        # they are indeed diff by a factor of 1024 exactly        
+        k_gb = 3.725290298461914e-09
+        k_mb = 3.814697265625e-06
+        #k_kb = 3.90625e-03
+
+        est_mem_gb = k_gb * size
+        if est_mem_gb >= 2:
+            print("Warning! A map of this size will use AT LEAST 2GB of memory!")
+
+        # max 1 GB surfaces
+        # Use mb so denominator isnt so tiny that its inacurate
+        w_sub = 1024 / (h * k_mb)
+        w_sub = int(w_sub)
+
+        w_last = ww % w_sub
+        n_sub = ww // w_sub
+
+        surfaces = [pg.Surface((w_sub,h)) for _ in range(n_sub)]
+        if w_last > 0:
+            surfaces.append(pg.Surface((w_last,h)))
+        return surfaces
+        #return pg.Surface(self.world_size)
 
     def get_surface_center(self):
         w, h = self.surface.get_size()
@@ -136,13 +167,45 @@ class Camera:
 
     def update_display_as_world_section(self):
         origin = self.AXIAL_ORIGIN_PIXEL
-        world = self.WORLD_SURFACE
+        world = self.WORLD_SURFACES
 
-        _, tl = self.get_bottom_right_and_top_left()
+        br, tl = self.get_bottom_right_and_top_left()
         tlx, tly = tl
+        brx, _ = br
+
         tlx += origin[0]
+        brx += origin[0]
+
         tly += origin[1]
 
-        proper_rect = pg.Rect((tlx, tly), self.surface.get_size())
-        new_surface = world.subsurface(proper_rect)
-        self.surface = new_surface
+        wc = 0
+        ctlx = tlx
+        prev_w = 0
+        prev_ws = [0]
+        surfs = []
+        for surface in world:
+            w_surf, _ = surface.get_size()
+            _, h_camera = self.surface.get_size()
+            
+            xf = wc + w_surf
+            cbrx = min(xf,brx)
+            if ctlx != cbrx and ctlx <= xf:
+                tlx_p = ctlx - wc
+                brx_p = min(w_surf, brx-wc)
+
+                w_sub_camera = brx_p - tlx_p
+                proper_rect = pg.Rect((tlx_p, tly),(w_sub_camera,h_camera))
+                sub_surf = surface.subsurface(proper_rect)
+                
+                surfs.append(sub_surf)
+                prev_w += w_sub_camera
+                prev_ws.append(prev_w)
+
+            ctlx = cbrx
+            wc = xf
+
+        self.surface.blits([[surfs[i],(prev_ws[i],0)] for i in range(len(surfs))])
+
+        # proper_rect = pg.Rect((tlx, tly), self.surface.get_size())
+        # new_surface = world.subsurface(proper_rect)
+        # self.surface = new_surface
