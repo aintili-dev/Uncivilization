@@ -201,7 +201,7 @@ class Camera:
                 prev_w += w_sub_camera
                 prev_ws.append(prev_w)
 
-            ctlx = cbrx
+                ctlx = cbrx
             wc = xf
 
         self.surface.blits([[surfs[i],(prev_ws[i],0)] for i in range(len(surfs))])

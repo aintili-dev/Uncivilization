@@ -1,7 +1,5 @@
 import pygame as pg
 import numpy as np
-import random
-import sys
 import time
 
 from Uncivilization.Hex import *
@@ -180,7 +178,7 @@ def init_world_render(game):
 
     for tile in board.values():
         tile.draw_tile_images_to_world(game)
-        #tile.draw_coords(game, ctype="both")
+        tile.draw_coords(game, ctype="both")
 
     dt = time.time() - t_load
     dt = format(dt, "0.2f")
