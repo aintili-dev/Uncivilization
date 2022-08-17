@@ -136,7 +136,7 @@ def basicUserInputLogic(game):
         diff = (-scale_factor * diffx, -scale_factor * diffy)
         # diff = (-diffx/scale_factor,-diffy/scale_factor)
 
-        cam.add_to_center(diff, game)
+        cam.add_to_center(diff)
 
         rend.full_redraw = True
         if inputs.lc_held1 == inputs.lc_held0:

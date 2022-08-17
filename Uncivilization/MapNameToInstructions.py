@@ -22,12 +22,23 @@ def convert_alphas(r):
 def convert_hexes_and_set_camera(game):
     t0 = time.time()
     r = game.Renderer
+    play_rows, play_cols = game.GameState.playable_grid_size
     rows, cols = game.GameState.grid_size
 
     convert_alphas(r)
 
     hex_asset_size = r.assets["base_hex_size"]
-    game.Renderer.camera = Camera(hex_asset_size, r.width, r.height, rows, cols, n_max=14, n_min=4)
+    game.Renderer.camera = Camera(
+        hex_asset_size, 
+        r.width,
+        r.height,
+        rows,
+        cols,
+        play_rows,
+        play_cols,
+        n_max=14,
+        n_min=4
+    )
 
     dt = time.time() - t0
     dt = format(1000 * dt, "0.2f")
@@ -101,8 +112,8 @@ def draw_random_dots(game, rect, rect_color, timer, background_color=(0, 0, 0)):
 
 def random_tiles(game):
     state = game.GameState
-    grid = state.grid_size
-    rows, cols = grid
+    original_rows, original_cols = state.playable_grid_size
+    rows,cols = state.grid_size
 
     imgs = [
         "red",
@@ -128,25 +139,8 @@ def random_tiles(game):
             tile = Hex(cube=cube, images=[img])
             # tile = Hex(cube=cube, images=["red_hex_and_border.png"])
             q, r = tile.v
-
+            tile.is_void = True if abs(row) > original_rows or abs(col) > original_cols else False
             state.board.update({f"{q},{r}": tile})
-
-    # actual_rows = rows + 1 if rows % 2 == 0 else rows
-    # row_extrema_num = rows//2
-    # for row in range(-row_extrema_num,row_extrema_num + 1):
-    #     for col in range(-cols, cols + 1, 2):
-    #         cube = doubled_to_cube(row, col)
-    #         col_corrected,row_corrected = cube_to_doubled(cube)
-    #         # ^ doubled coord weirdness
-    #         if abs(col_corrected) <= cols:
-    #             #img = random.choice(imgs)
-    #             #img = f"{img}_hex_and_border.png"
-    #             #tile = Hex(cube=cube, images=[img])
-    #             tile = Hex(cube=cube, images=["red_hex_and_border.png"])
-    #             q, r = tile.v
-
-    #             state.board.update({f"{q},{r}": tile})
-
 
 MAP_TO_FUNC = {"random": random_tiles}
 

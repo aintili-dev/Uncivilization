@@ -6,7 +6,7 @@ INV_S3 = S3 * (1 / 3)
 
 
 class Camera:
-    def __init__(self, hex_asset_size, w_scr, h_scr, rows, cols, n_max=14, n_min=4):
+    def __init__(self, hex_asset_size, w_scr, h_scr, true_rows, true_cols, rows, cols, n_max=14, n_min=4):
         self.n_min = n_min
         self.n_max = n_max
         self.hex_asset_size = hex_asset_size
@@ -28,18 +28,26 @@ class Camera:
         self.reverse = False
         self.zoom_level = 1
 
-        size = self.hex_asset_size[1] / 2
-        rows_bot = -(-rows // 2) if rows % 2 == 0 else -(-rows // 2) - 1
-        rows_top = rows // 2 if rows % 2 == 1 else (rows // 2) - 1
-
-        self.d_from_top = size * (1.5 * rows_top + 1)
-        self.d_from_bottom = size * (1.5 * rows_bot + 1)
-        w_world = (cols + 0.5) * self.hex_asset_size[0]
-        h_world = self.d_from_top + self.d_from_bottom
+        w_world, h_world, d_from_bottom, d_from_top = self.determine_section_size(true_rows,true_cols)
+        w_play, h_play, _ , _ = self.determine_section_size(rows,cols)
 
         self.world_size = (w_world, h_world)
+        self.player_world_size = (w_play,h_play)
+        self.d_from_bottom = d_from_bottom
+        self.d_from_top = d_from_top
         self.WORLD_SURFACES = self.initialize_world_surfaces()
         self.AXIAL_ORIGIN_PIXEL = None
+
+
+    def determine_section_size(self, rows, cols):
+        rows_bot = -(-rows // 2) if rows % 2 == 0 else -(-rows // 2) - 1
+        rows_top = rows // 2 if rows % 2 == 1 else (rows // 2) - 1
+        d_from_top = self.hex_size * (1.5 * rows_top + 1)
+        d_from_bottom = self.hex_size * (1.5 * rows_bot + 1)
+        w = (cols + 0.5) * self.hex_asset_size[0]
+        h = d_from_top + d_from_bottom
+        return w, h, d_from_bottom, d_from_top
+
 
     def initialize_world_surfaces(self):
         w,h = self.world_size
@@ -70,7 +78,6 @@ class Camera:
         if w_last > 0:
             surfaces.append(pg.Surface((w_last,h)))
         return surfaces
-        #return pg.Surface(self.world_size)
 
     def get_surface_center(self):
         w, h = self.surface.get_size()
@@ -105,12 +112,8 @@ class Camera:
         new_zoom = self.zoom_level + incr
         self.update_zoom_level(new_zoom, game)
 
-    def update_center(self, cen, game):
-        gs = game.GameState
-        board = gs.board
-
+    def update_center(self, cen):
         cx, cy = cen
-        row, col = game.GameState.grid_size
 
         w, h = self.surface.get_size()
         world_size = self.world_size
@@ -152,18 +155,18 @@ class Camera:
         cy = cy_worldy - origin[1]
         self.center = (cx, cy)
 
-    def add_to_center(self, incr, game):
+    def add_to_center(self, incr):
         x1, y1 = incr
         x0, y0 = self.center
         new_center = (x1 + x0, y1 + y0)
-        self.update_center(new_center, game)
+        self.update_center(new_center)
 
     def zoom_and_recenter(self, game):
         inputs = game.PlayerInput
         scroll_sp = 0.3
         scroll_amt = -1 * inputs.scroll_dir * game.dt * game.TARGET_FPS * scroll_sp
         self.zoom(scroll_amt, game)
-        self.update_center(self.center, game)  # probably not necessary
+        self.update_center(self.center)  # probably not necessary
 
     def update_display_as_world_section(self):
         origin = self.AXIAL_ORIGIN_PIXEL

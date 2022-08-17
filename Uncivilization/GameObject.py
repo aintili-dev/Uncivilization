@@ -44,10 +44,13 @@ class GameState:
         # TODO, this breaks for low rows/cols
         # (proportial to window_size)
         # Should support n_min and corresponding ratio
-        self.rows = 66
-        self.cols = 200
+        self.playable_rows = 3
+        self.playable_cols = 3
+        self.rows = max(self.playable_rows, 10)
+        self.cols = max(self.playable_cols, 15)
         # that being said, for refernce civ 6 tiniest
         # map is 44x26 and the largest is 106x66 columns
+        self.playable_grid_size = (self.playable_rows,self.playable_cols)
         self.grid_size = (self.rows, self.cols)
         self.board = {}
         self.inMainMenu = True

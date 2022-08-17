@@ -161,6 +161,7 @@ class Hex:
             self.cube = cube
         self.images = images
         self.boarder_img = "outline_hex.png"
+        self.is_void = False
 
     def get_corner(self, center, size, index):
         angle_deg = 60 * index - 30
@@ -254,32 +255,32 @@ class Hex:
         rend = game.Renderer
         camera = rend.camera
         surfaces = camera.WORLD_SURFACES
+        if not self.is_void:
+            # TODO, switch loop to do blits instead of blit
+            for image in self.images:
+                img, tl = self.get_image_for_world(game,img=image)
+                imgw,imgh = img.get_size()
+                tlx,tly = tl
+                brx = tlx + imgw
+                wc = 0
+                ctlx = tlx
+                prev_w = 0
+                for surface in surfaces:
+                    w_surf, _ = surface.get_size()
+                    xf = wc + w_surf
+                    cbrx = min(xf,brx)
+                    if ctlx != cbrx and ctlx <= xf:
+                        tlx_p = ctlx - wc
 
-        # TODO, switch loop to do blits instead of blit
-        for image in self.images:
-            img, tl = self.get_image_for_world(game,img=image)
-            imgw,imgh = img.get_size()
-            tlx,tly = tl
-            brx = tlx + imgw
-            wc = 0
-            ctlx = tlx
-            prev_w = 0
-            for surface in surfaces:
-                w_surf, _ = surface.get_size()
-                xf = wc + w_surf
-                cbrx = min(xf,brx)
-                if ctlx != cbrx and ctlx <= xf:
-                    tlx_p = ctlx - wc
+                        w_sub_img = min(xf-ctlx,brx-ctlx)
+                        proper_rect = pg.Rect((prev_w, 0),(w_sub_img,imgh))
+                        sub_surf = img.subsurface(proper_rect)
 
-                    w_sub_img = min(xf-ctlx,brx-ctlx)
-                    proper_rect = pg.Rect((prev_w, 0),(w_sub_img,imgh))
-                    sub_surf = img.subsurface(proper_rect)
+                        surface.blit(sub_surf,(tlx_p,tly))
 
-                    surface.blit(sub_surf,(tlx_p,tly))
-
-                    prev_w += w_sub_img
-                    ctlx = cbrx
-                wc = xf
+                        prev_w += w_sub_img
+                        ctlx = cbrx
+                    wc = xf
 
         #asset_dest_pairs = [self.get_image_for_world(game,img=image) for image in self.images]
         #camera.WORLD_SURFACES.blits(asset_dest_pairs)
