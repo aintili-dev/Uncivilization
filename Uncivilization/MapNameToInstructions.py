@@ -29,15 +29,7 @@ def convert_hexes_and_set_camera(game):
 
     hex_asset_size = r.assets["base_hex_size"]
     game.Renderer.camera = Camera(
-        hex_asset_size, 
-        r.width,
-        r.height,
-        rows,
-        cols,
-        play_rows,
-        play_cols,
-        n_max=14,
-        n_min=4
+        hex_asset_size, r.width, r.height, rows, cols, play_rows, play_cols, n_max=14, n_min=4
     )
 
     dt = time.time() - t0
@@ -113,7 +105,7 @@ def draw_random_dots(game, rect, rect_color, timer, background_color=(0, 0, 0)):
 def random_tiles(game):
     state = game.GameState
     original_rows, original_cols = state.playable_grid_size
-    rows,cols = state.grid_size
+    rows, cols = state.grid_size
 
     imgs = [
         "red",
@@ -141,6 +133,7 @@ def random_tiles(game):
             q, r = tile.v
             tile.is_void = True if abs(row) > original_rows or abs(col) > original_cols else False
             state.board.update({f"{q},{r}": tile})
+
 
 MAP_TO_FUNC = {"random": random_tiles}
 

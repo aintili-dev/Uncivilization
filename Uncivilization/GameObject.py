@@ -21,7 +21,7 @@ class GameObject:
         self.AudioMixer = audio_mixer
 
     def calc_fps(self):
-        return 1 / self.dt
+        return 1 / self.dt if self.dt != 0 else np.inf
 
 
 class PlayerInput:
@@ -42,15 +42,20 @@ class GameState:
     def __init__(self):
         self.isPaused = False
         # TODO, this breaks for low rows/cols
-        # (proportial to window_size)
-        # Should support n_min and corresponding ratio
-        self.playable_rows = 3
-        self.playable_cols = 3
-        self.rows = max(self.playable_rows, 10)
-        self.cols = max(self.playable_cols, 15)
+        # ^ default rows <-> assume blank tiles
+        # fixes this, need to make camera not
+        # look horrible for low tiles though,
+        # that being said a 44 x 26 map
+        # works fine as is
+        default_rows = 10
+        default_cols = 20
+        self.playable_rows = 26
+        self.playable_cols = 44
+        self.rows = max(self.playable_rows, default_rows)
+        self.cols = max(self.playable_cols, default_cols)
         # that being said, for refernce civ 6 tiniest
         # map is 44x26 and the largest is 106x66 columns
-        self.playable_grid_size = (self.playable_rows,self.playable_cols)
+        self.playable_grid_size = (self.playable_rows, self.playable_cols)
         self.grid_size = (self.rows, self.cols)
         self.board = {}
         self.inMainMenu = True

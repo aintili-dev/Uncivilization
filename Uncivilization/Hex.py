@@ -196,10 +196,9 @@ class Hex:
         TextSurf = render.coordText.render(coord_s, False, (1, 1, 1))
         text_rect = TextSurf.get_rect(center=(x, y))
 
-        
         tl = text_rect.topleft
-        imgw,imgh = TextSurf.get_size()
-        tlx,tly = tl
+        imgw, imgh = TextSurf.get_size()
+        tlx, tly = tl
         brx = tlx + imgw
         wc = 0
         ctlx = tlx
@@ -207,21 +206,21 @@ class Hex:
         for surface in cam.WORLD_SURFACES:
             w_surf, _ = surface.get_size()
             xf = wc + w_surf
-            cbrx = min(xf,brx)
+            cbrx = min(xf, brx)
             if ctlx != cbrx and ctlx <= xf:
                 tlx_p = ctlx - wc
 
-                w_sub_img = min(xf-ctlx,brx-ctlx)
-                proper_rect = pg.Rect((prev_w, 0),(w_sub_img,imgh))
+                w_sub_img = min(xf - ctlx, brx - ctlx)
+                proper_rect = pg.Rect((prev_w, 0), (w_sub_img, imgh))
                 sub_surf = TextSurf.subsurface(proper_rect)
 
-                surface.blit(sub_surf,(tlx_p,tly))
+                surface.blit(sub_surf, (tlx_p, tly))
 
                 prev_w += w_sub_img
                 ctlx = cbrx
             wc = xf
 
-       # cam.WORLD_SURFACES.blit(TextSurf, text_rect)
+    # cam.WORLD_SURFACES.blit(TextSurf, text_rect)
 
     def get_image_for_display(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
@@ -233,7 +232,6 @@ class Hex:
         dest = (x0 - img_w / 2, y0 - img_h / 2)
 
         return loaded_image, dest
-
 
     def get_image_for_world(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
@@ -258,9 +256,9 @@ class Hex:
         if not self.is_void:
             # TODO, switch loop to do blits instead of blit
             for image in self.images:
-                img, tl = self.get_image_for_world(game,img=image)
-                imgw,imgh = img.get_size()
-                tlx,tly = tl
+                img, tl = self.get_image_for_world(game, img=image)
+                imgw, imgh = img.get_size()
+                tlx, tly = tl
                 brx = tlx + imgw
                 wc = 0
                 ctlx = tlx
@@ -268,19 +266,19 @@ class Hex:
                 for surface in surfaces:
                     w_surf, _ = surface.get_size()
                     xf = wc + w_surf
-                    cbrx = min(xf,brx)
+                    cbrx = min(xf, brx)
                     if ctlx != cbrx and ctlx <= xf:
                         tlx_p = ctlx - wc
 
-                        w_sub_img = min(xf-ctlx,brx-ctlx)
-                        proper_rect = pg.Rect((prev_w, 0),(w_sub_img,imgh))
+                        w_sub_img = min(xf - ctlx, brx - ctlx)
+                        proper_rect = pg.Rect((prev_w, 0), (w_sub_img, imgh))
                         sub_surf = img.subsurface(proper_rect)
 
-                        surface.blit(sub_surf,(tlx_p,tly))
+                        surface.blit(sub_surf, (tlx_p, tly))
 
                         prev_w += w_sub_img
                         ctlx = cbrx
                     wc = xf
 
-        #asset_dest_pairs = [self.get_image_for_world(game,img=image) for image in self.images]
-        #camera.WORLD_SURFACES.blits(asset_dest_pairs)
+        # asset_dest_pairs = [self.get_image_for_world(game,img=image) for image in self.images]
+        # camera.WORLD_SURFACES.blits(asset_dest_pairs)

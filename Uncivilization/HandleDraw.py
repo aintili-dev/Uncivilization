@@ -186,7 +186,7 @@ def init_world_render(game):
     for surface in cam.WORLD_SURFACES:
         byte_size_row = surface.get_pitch()
         byte_size += byte_size_row * surface.get_size()[1]
-    
+
     byte_size /= 1024 * 1024 * 1024
     byte_size = format(byte_size, "0.2f")
     print(f"Finished initializing world in {dt}s.\nIt is ~{byte_size} GB (using pitch * height)")

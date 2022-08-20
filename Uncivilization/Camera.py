@@ -6,7 +6,9 @@ INV_S3 = S3 * (1 / 3)
 
 
 class Camera:
-    def __init__(self, hex_asset_size, w_scr, h_scr, true_rows, true_cols, rows, cols, n_max=14, n_min=4):
+    def __init__(
+        self, hex_asset_size, w_scr, h_scr, true_rows, true_cols, rows, cols, n_max=14, n_min=4
+    ):
         self.n_min = n_min
         self.n_max = n_max
         self.hex_asset_size = hex_asset_size
@@ -28,16 +30,17 @@ class Camera:
         self.reverse = False
         self.zoom_level = 1
 
-        w_world, h_world, d_from_bottom, d_from_top = self.determine_section_size(true_rows,true_cols)
-        w_play, h_play, _ , _ = self.determine_section_size(rows,cols)
+        w_world, h_world, d_from_bottom, d_from_top = self.determine_section_size(
+            true_rows, true_cols
+        )
+        w_play, h_play, _, _ = self.determine_section_size(rows, cols)
 
         self.world_size = (w_world, h_world)
-        self.player_world_size = (w_play,h_play)
+        self.player_world_size = (w_play, h_play)
         self.d_from_bottom = d_from_bottom
         self.d_from_top = d_from_top
         self.WORLD_SURFACES = self.initialize_world_surfaces()
         self.AXIAL_ORIGIN_PIXEL = None
-
 
     def determine_section_size(self, rows, cols):
         rows_bot = -(-rows // 2) if rows % 2 == 0 else -(-rows // 2) - 1
@@ -48,19 +51,18 @@ class Camera:
         h = d_from_top + d_from_bottom
         return w, h, d_from_bottom, d_from_top
 
-
     def initialize_world_surfaces(self):
-        w,h = self.world_size
+        w, h = self.world_size
         size = w * h
 
         # if we get random float errors, its probably because of this :)
         ww = int(w)
 
         # All determined emperically for sanity check
-        # they are indeed diff by a factor of 1024 exactly        
+        # they are indeed diff by a factor of 1024 exactly
         k_gb = 3.725290298461914e-09
         k_mb = 3.814697265625e-06
-        #k_kb = 3.90625e-03
+        # k_kb = 3.90625e-03
 
         est_mem_gb = k_gb * size
         if est_mem_gb >= 2:
@@ -74,9 +76,9 @@ class Camera:
         w_last = ww % w_sub
         n_sub = ww // w_sub
 
-        surfaces = [pg.Surface((w_sub,h)) for _ in range(n_sub)]
+        surfaces = [pg.Surface((w_sub, h)) for _ in range(n_sub)]
         if w_last > 0:
-            surfaces.append(pg.Surface((w_last,h)))
+            surfaces.append(pg.Surface((w_last, h)))
         return surfaces
 
     def get_surface_center(self):
@@ -115,13 +117,17 @@ class Camera:
     def update_center(self, cen):
         cx, cy = cen
 
-        w, h = self.surface.get_size()
+        cam_w, cam_h = self.surface.get_size()
         world_size = self.world_size
+        # playable_world_size = self.player_world_size
+
+        w, h = world_size
+
         origin = self.AXIAL_ORIGIN_PIXEL
 
-        max_x = world_size[0]
+        max_x = w
         min_x = 0
-        max_y = world_size[1]
+        max_y = h
         min_y = 0
 
         br, tl = self.get_bottom_right_and_top_left(center=cen)
@@ -137,19 +143,19 @@ class Camera:
 
         # # Overshot right
         if br_worldx > max_x:
-            cx_worldx = max_x - w / 2
+            cx_worldx = max_x - cam_w / 2
 
         # # Overshot left
         if tl_worldx < min_x:
-            cx_worldx = min_x + w / 2
+            cx_worldx = min_x + cam_w / 2
 
         # # Overshot up
         if tl_worldy < min_y:
-            cy_worldy = min_y + h / 2
+            cy_worldy = min_y + cam_h / 2
 
         # # Overshot down
         if br_worldy > max_y:
-            cy_worldy = max_y - h / 2
+            cy_worldy = max_y - cam_h / 2
 
         cx = cx_worldx - origin[0]
         cy = cy_worldy - origin[1]
@@ -189,17 +195,17 @@ class Camera:
         for surface in world:
             w_surf, _ = surface.get_size()
             _, h_camera = self.surface.get_size()
-            
+
             xf = wc + w_surf
-            cbrx = min(xf,brx)
+            cbrx = min(xf, brx)
             if ctlx != cbrx and ctlx <= xf:
                 tlx_p = ctlx - wc
-                brx_p = min(w_surf, brx-wc)
+                brx_p = min(w_surf, brx - wc)
 
                 w_sub_camera = brx_p - tlx_p
-                proper_rect = pg.Rect((tlx_p, tly),(w_sub_camera,h_camera))
+                proper_rect = pg.Rect((tlx_p, tly), (w_sub_camera, h_camera))
                 sub_surf = surface.subsurface(proper_rect)
-                
+
                 surfs.append(sub_surf)
                 prev_w += w_sub_camera
                 prev_ws.append(prev_w)
@@ -207,7 +213,7 @@ class Camera:
                 ctlx = cbrx
             wc = xf
 
-        self.surface.blits([[surfs[i],(prev_ws[i],0)] for i in range(len(surfs))])
+        self.surface.blits([[surfs[i], (prev_ws[i], 0)] for i in range(len(surfs))])
 
         # proper_rect = pg.Rect((tlx, tly), self.surface.get_size())
         # new_surface = world.subsurface(proper_rect)
