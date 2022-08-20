@@ -161,6 +161,7 @@ class Hex:
             self.cube = cube
         self.images = images
         self.boarder_img = "outline_hex.png"
+        self.is_void = False
 
     def get_corner(self, center, size, index):
         angle_deg = 60 * index - 30
@@ -169,13 +170,13 @@ class Hex:
 
     def get_edge(self, center, size, indeces):
         start, end = indeces
-        return get_corner(center, size, start), get_corner(center, size, end)
+        return self.get_corner(center, size, start), self.get_corner(center, size, end)
 
     def draw_coords(self, game, ctype="axial"):
         q, r = self.v
         render = game.Renderer
         cam = render.camera
-        origin = cam.AXIAL_ORIGIN
+        origin = cam.AXIAL_ORIGIN_PIXEL
 
         x, y = axial_to_pixel(game, self.v)
         x = x + origin[0]
@@ -194,7 +195,32 @@ class Hex:
 
         TextSurf = render.coordText.render(coord_s, False, (1, 1, 1))
         text_rect = TextSurf.get_rect(center=(x, y))
-        cam.WORLD_SURFACE.blit(TextSurf, text_rect)
+
+        tl = text_rect.topleft
+        imgw, imgh = TextSurf.get_size()
+        tlx, tly = tl
+        brx = tlx + imgw
+        wc = 0
+        ctlx = tlx
+        prev_w = 0
+        for surface in cam.WORLD_SURFACES:
+            w_surf, _ = surface.get_size()
+            xf = wc + w_surf
+            cbrx = min(xf, brx)
+            if ctlx != cbrx and ctlx <= xf:
+                tlx_p = ctlx - wc
+
+                w_sub_img = min(xf - ctlx, brx - ctlx)
+                proper_rect = pg.Rect((prev_w, 0), (w_sub_img, imgh))
+                sub_surf = TextSurf.subsurface(proper_rect)
+
+                surface.blit(sub_surf, (tlx_p, tly))
+
+                prev_w += w_sub_img
+                ctlx = cbrx
+            wc = xf
+
+    # cam.WORLD_SURFACES.blit(TextSurf, text_rect)
 
     def get_image_for_display(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
@@ -207,20 +233,12 @@ class Hex:
 
         return loaded_image, dest
 
-    def draw_tile_images_to_display(self, game):
-        rend = game.Renderer
-        camera = rend.camera
-        display = camera.surface
-        for image in self.images:
-            asset, dest = self.get_image_for_display(game, img=image)
-            display.blit(asset, dest)
-
     def get_image_for_world(self, game, img="dark_blue_hex_and_border.png"):
         r = game.Renderer
         assets = r.assets["base_hexes"]
         cam = r.camera
 
-        origin = cam.AXIAL_ORIGIN
+        origin = cam.AXIAL_ORIGIN_PIXEL
 
         loaded_image = assets[img]
         img_w, img_h = loaded_image.get_size()
@@ -234,6 +252,33 @@ class Hex:
     def draw_tile_images_to_world(self, game):
         rend = game.Renderer
         camera = rend.camera
-        for image in self.images:
-            asset, dest = self.get_image_for_world(game, img=image)
-            camera.WORLD_SURFACE.blit(asset, dest)
+        surfaces = camera.WORLD_SURFACES
+        if not self.is_void:
+            # TODO, switch loop to do blits instead of blit
+            for image in self.images:
+                img, tl = self.get_image_for_world(game, img=image)
+                imgw, imgh = img.get_size()
+                tlx, tly = tl
+                brx = tlx + imgw
+                wc = 0
+                ctlx = tlx
+                prev_w = 0
+                for surface in surfaces:
+                    w_surf, _ = surface.get_size()
+                    xf = wc + w_surf
+                    cbrx = min(xf, brx)
+                    if ctlx != cbrx and ctlx <= xf:
+                        tlx_p = ctlx - wc
+
+                        w_sub_img = min(xf - ctlx, brx - ctlx)
+                        proper_rect = pg.Rect((prev_w, 0), (w_sub_img, imgh))
+                        sub_surf = img.subsurface(proper_rect)
+
+                        surface.blit(sub_surf, (tlx_p, tly))
+
+                        prev_w += w_sub_img
+                        ctlx = cbrx
+                    wc = xf
+
+        # asset_dest_pairs = [self.get_image_for_world(game,img=image) for image in self.images]
+        # camera.WORLD_SURFACES.blits(asset_dest_pairs)

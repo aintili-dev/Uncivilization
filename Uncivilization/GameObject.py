@@ -1,9 +1,4 @@
 import pygame as pg
-import numpy as np
-import copy
-import json
-import pickle
-import random
 
 # from Uncivilization.Camera import *
 from Uncivilization.MapNameToInstructions import *
@@ -15,7 +10,7 @@ NUM_CHARACTERS = 6
 class GameObject:
     def __init__(self, player_input, game_state, renderer, audio_mixer):
         self.eps = 0.005
-        self.dt = 2 ** 31
+        self.dt = 2**31
         self.TARGET_FPS = 60
         self.MAX_FPS = 60
         self.drawDiagnostic = False
@@ -26,7 +21,7 @@ class GameObject:
         self.AudioMixer = audio_mixer
 
     def calc_fps(self):
-        return 1 / self.dt
+        return 1 / self.dt if self.dt != 0 else np.inf
 
 
 class PlayerInput:
@@ -46,8 +41,21 @@ class PlayerInput:
 class GameState:
     def __init__(self):
         self.isPaused = False
-        self.rows = 25
-        self.cols = 50
+        # TODO, this breaks for low rows/cols
+        # ^ default rows <-> assume blank tiles
+        # fixes this, need to make camera not
+        # look horrible for low tiles though,
+        # that being said a 44 x 26 map
+        # works fine as is
+        default_rows = 10
+        default_cols = 20
+        self.playable_rows = 26
+        self.playable_cols = 44
+        self.rows = max(self.playable_rows, default_rows)
+        self.cols = max(self.playable_cols, default_cols)
+        # that being said, for refernce civ 6 tiniest
+        # map is 44x26 and the largest is 106x66 columns
+        self.playable_grid_size = (self.playable_rows, self.playable_cols)
         self.grid_size = (self.rows, self.cols)
         self.board = {}
         self.inMainMenu = True
@@ -104,7 +112,6 @@ class Renderer:
         self.settingsBoxFormatting = self.setSettingsBoxFormatting()
         self.settingsMenuBoxes = self.getSettingsMenuBoxes()
         self.mapSelectRedraw = None
-
 
     def getMainMenuBoxes(
         self,
@@ -249,7 +256,7 @@ class Renderer:
                 (rows, cols), (x0, y0), (w_takeup, h_takeup), (row_num, col_num), x_buff=0
             )
             desc_rects.append([surface, rect])
-        
+
         self.settingsBoxFormatting["display_surround_box"] = desc_rects[0]
 
         return desc_rects
@@ -265,7 +272,7 @@ class Renderer:
         arrow_left = self.assets["initial_screen"]["left_arrow.png"]
 
         arrow_size = arrow_right.get_size()
-        
+
         largest_rect_width = formatting_info["largest_value_rect_width"]
         largest_rect_height = formatting_info["largest_value_rect_height"]
 
@@ -276,11 +283,10 @@ class Renderer:
             arrow_left = pg.transform.flip(arrow_right, True, False)
             self.assets["initial_screen"]["left_arrow.png"] = arrow_left
 
-        
         first_setting_box = formatting_info["display_surround_box"]
 
         x0 = first_setting_box[1].bottomright[0] + w / 4
-        y0 = first_setting_box[1].topleft[1] - max(w//50,1)
+        y0 = first_setting_box[1].topleft[1] - max(w // 50, 1)
 
         rows = formatting_info["rows"]
         cols = 1
@@ -299,7 +305,7 @@ class Renderer:
                 (rows, cols), (x0, y0), (w_takeup, h_takeup), (row_num, col_num), x_buff=0
             )
             interact_rects.append([TextSurf, rect])
-        
+
         ref_rect = interact_rects[0][1]
 
         x0 = ref_rect.bottomright[0]
@@ -308,19 +314,18 @@ class Renderer:
         x0 -= size[0]
         nw = size[0]
         nh = ref_rect.height
-        new_rect = pg.Rect((x0,y0),(nw,nh))
+        new_rect = pg.Rect((x0, y0), (nw, nh))
 
-        interact_rects.append([arrow_right,new_rect])
+        interact_rects.append([arrow_right, new_rect])
 
         x0 = ref_rect.topleft[0]
         y0 = ref_rect.topleft[1]
         size = arrow_left.get_size()
         nw = size[0]
         nh = ref_rect.height
-        new_rect = pg.Rect((x0,y0),(nw,nh))
+        new_rect = pg.Rect((x0, y0), (nw, nh))
 
-        interact_rects.append([arrow_left,new_rect])
-
+        interact_rects.append([arrow_left, new_rect])
 
         return interact_rects
 
@@ -334,7 +339,7 @@ class Renderer:
         descriptors = self.settings_Descriptors()
         interactables = self.settings_Interactables()
 
-        descriptors.insert(0,title_box_info)
+        descriptors.insert(0, title_box_info)
 
         return [descriptors, interactables]
 
